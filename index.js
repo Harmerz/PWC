@@ -4,12 +4,14 @@ const app = express()
 const port = process.env.PORT || 5000
 const cors = require('cors')
 const mongoose = require('mongoose')
+const Initial = require('./models/initial/role.initial.js')
 
 mongoose.set('strictQuery', false)
 mongoose
   .connect(process.env.DATABASE_URL)
   .then(() => {
     console.log('DB CONNECTED')
+    Initial()
   })
   .catch((err) => {
     console.error('UNABLE to connect to DB:', err)
@@ -41,6 +43,10 @@ app.get('/ping', (req, res) => {
     message: 'PONG',
   })
 })
+
+const auth = require('./routes/auth')
+
+app.use('/auth', auth)
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`)
