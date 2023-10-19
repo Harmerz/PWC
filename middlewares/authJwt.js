@@ -4,7 +4,7 @@ const Role = require('../models/role')
 require('dotenv').config()
 
 verifyToken = (req, res, next) => {
-  let token = req.headers['authorization'].split(' ')[1]
+  let token = req?.headers?.['authorization']?.split(' ')?.[1]
 
   if (!token) {
     return res.status(403).send({ message: 'No token provided!' })

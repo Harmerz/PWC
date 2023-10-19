@@ -48,6 +48,10 @@ const auth = require('./routes/auth')
 
 app.use('/auth', auth)
 
+const user = require('./routes/user')
+
+app.use('/test', user)
+
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`)
 })
