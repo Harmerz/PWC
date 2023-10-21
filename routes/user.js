@@ -4,6 +4,6 @@ const express = require('express')
 const router = express.Router()
 
 router.get('/all', controller.allAccess)
-router.get('/user', [authJwt.verifyToken], controller.userBoard)
+router.get('/user', [authJwt.verifyToken], controller.userData)
 
 module.exports = router

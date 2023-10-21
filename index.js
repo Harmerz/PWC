@@ -50,7 +50,7 @@ app.use('/auth', auth)
 
 const user = require('./routes/user')
 
-app.use('/test', user)
+app.use('/api', user)
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`)

@@ -1,7 +1,7 @@
 const User = require('../models/user')
 const Role = require('../models/role')
 require('dotenv').config()
-
+const { uuid } = require('uuidv4')
 var jwt = require('jsonwebtoken')
 var bcrypt = require('bcryptjs')
 
@@ -53,12 +53,34 @@ exports.signin = async (req, res) => {
         message: 'Invalid Password!',
       })
     }
+    console.log(uuid())
+    const accessToken = jwt.sign(
+      {
+        type: 'access',
+        jti: uuid(),
+        sub: user.email,
+      },
+      process.env.ACCESS_TOKEN_SECRET,
+      {
+        algorithm: 'HS256',
+        allowInsecureKeySizes: true,
+        expiresIn: 1800,
+      }
+    )
 
-    const token = jwt.sign({ id: user.id }, process.env.TOKEN_SECRET, {
-      algorithm: 'HS256',
-      allowInsecureKeySizes: true,
-      expiresIn: 86400, // 24 hours
-    })
+    const refreshToken = jwt.sign(
+      {
+        type: 'access',
+        jti: uuid(),
+        sub: user.email,
+      },
+      process.env.REFRESH_TOKEN_SECRET,
+      {
+        algorithm: 'HS256',
+        allowInsecureKeySizes: true,
+        expiresIn: 1800,
+      }
+    )
 
     var authorities = []
 
@@ -67,12 +89,13 @@ exports.signin = async (req, res) => {
       authorities.push('ROLE_' + role.name.toUpperCase())
     }
     res.status(200).send({
-      accessToken: token,
-      id: user?._id ?? '',
-      name: user?.name ?? '',
-      username: user?.username ?? '',
-      email: user?.email ?? '',
-      roles: authorities,
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+      // id: user?._id ?? '',
+      // name: user?.name ?? '',
+      // username: user?.username ?? '',
+      // email: user?.email ?? '',
+      // roles: authorities,
     })
   } catch (err) {
     res.status(500).send({ message: err.message })
