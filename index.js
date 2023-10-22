@@ -17,7 +17,7 @@ mongoose
     console.error('UNABLE to connect to DB:', err)
   })
 
-var allowedOrigins = ['http://localhost:5000', 'https://pwc-be.vercel.app/']
+var allowedOrigins = ['http://localhost:3000', 'https://pwc-be.vercel.app/']
 app.use(
   cors({
     origin: function (origin, callback) {
@@ -49,8 +49,9 @@ const auth = require('./routes/auth')
 app.use('/auth', auth)
 
 const user = require('./routes/user')
-
+const question = require('./routes/question')
 app.use('/api', user)
+app.use('/api', question)
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`)

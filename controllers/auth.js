@@ -28,6 +28,7 @@ exports.signup = async (req, res) => {
     return
   }
 }
+let refreshTokens = []
 
 exports.signin = async (req, res) => {
   try {
@@ -57,7 +58,6 @@ exports.signin = async (req, res) => {
     const accessToken = jwt.sign(
       {
         type: 'access',
-        jti: uuid(),
         sub: user.email,
       },
       process.env.ACCESS_TOKEN_SECRET,
@@ -70,18 +70,17 @@ exports.signin = async (req, res) => {
 
     const refreshToken = jwt.sign(
       {
-        type: 'access',
-        jti: uuid(),
+        type: 'refresh',
         sub: user.email,
       },
       process.env.REFRESH_TOKEN_SECRET,
       {
         algorithm: 'HS256',
         allowInsecureKeySizes: true,
-        expiresIn: 1800,
+        expiresIn: 60 * 60 * 24 * 30,
       }
     )
-
+    refreshTokens.push(refreshToken)
     var authorities = []
 
     for (let i = 0; i < user.roles.length; i++) {
@@ -101,4 +100,38 @@ exports.signin = async (req, res) => {
     res.status(500).send({ message: err.message })
     return
   }
+}
+
+exports.refreshAccessToken = (req, res) => {
+  const token = req?.headers?.['authorization']?.split(' ')?.[1]
+  if (!refreshTokens.includes(token)) return res.sendStatus(403)
+  jwt.verify(token, process.env.REFRESH_TOKEN_SECRET, (err, decoded) => {
+    if (err) {
+      console.log(err)
+      return res.status(401).send({
+        message: 'Unauthorized!',
+      })
+    }
+
+    const accessToken = jwt.sign(
+      {
+        type: 'access',
+        sub: decoded.sub,
+      },
+      process.env.ACCESS_TOKEN_SECRET,
+      {
+        algorithm: 'HS256',
+        allowInsecureKeySizes: true,
+        expiresIn: 1800,
+      }
+    )
+
+    res.json({ accessToken: accessToken })
+  })
+}
+
+exports.logout = (req, res) => {
+  const refresh = req?.headers?.['authorization']?.split(' ')?.[1]
+  refreshTokens = refreshTokens.filter((token) => token !== refresh)
+  res.sendStatus(204)
 }

@@ -91,4 +91,9 @@ router.post('/signup', [verifySignUp.checkDuplicateUsernameOrEmail], controller.
  */
 router.post('/signin', controller.signin)
 
+router.post('/refresh-token', controller.refreshAccessToken)
+
+router.delete('/logout', controller.logout)
+
 module.exports = router
+  
