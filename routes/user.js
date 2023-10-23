@@ -5,5 +5,5 @@ const router = express.Router()
 
 router.get('/all', controller.allAccess)
 router.get('/user', [authJwt.verifyToken], controller.userData)
-
+router.post('/user', [authJwt.verifyToken], controller.userInput)
 module.exports = router
