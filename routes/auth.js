@@ -94,6 +94,6 @@ router.post('/signin', controller.signin)
 router.post('/refresh-token', controller.refreshAccessToken)
 
 router.delete('/logout', controller.logout)
+router.post('/verify-email', controller.verifyEmail)
 
 module.exports = router
-  

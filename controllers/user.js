@@ -22,7 +22,7 @@ exports.userData = async (req, res) => {
     }
   })
   const user = await User.findOne({
-    email: data.sub,
+    _id: data.sub,
   })
   res.status(200).send({
     name: user.name,
@@ -47,7 +47,7 @@ exports.userInput = async (req, res) => {
   const dataUser = res.body
   const user = await User.findOneAndUpdate(
     {
-      email: data.sub,
+      _id: data.sub,
     },
     dataUser
   )

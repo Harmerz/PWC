@@ -1,25 +1,30 @@
 const User = require('../models/user')
 const Role = require('../models/role')
+const { sendVerificationMail } = require('../utils/sendVerificationEmail')
+
 require('dotenv').config()
-const { uuid } = require('uuidv4')
 var jwt = require('jsonwebtoken')
 var bcrypt = require('bcryptjs')
+const crypto = require('crypto')
 
 exports.signup = async (req, res) => {
   try {
     res.header('Access-Control-Allow-Headers', 'x-access-token, Origin, Content-Type, Accept')
+    const date = new Date()
     const user = new User({
-      name: req.body.name,
-      username: req.body.username,
       email: req.body.email,
+      name: req.body.name,
       password: bcrypt.hashSync(req.body.password, 8),
+      emailToken: crypto.randomBytes(64).toString('hex'),
+      sendVerify: date,
     })
     const roles = await Role.findOne({ name: 'user' })
     console.log(roles)
     user.roles = [roles._id]
-
     await user.save()
     // Send success response
+    sendVerificationMail(user)
+
     res.status(201).json({
       message: 'User created successfully',
     })
@@ -28,21 +33,36 @@ exports.signup = async (req, res) => {
     return
   }
 }
+
+exports.verifyEmail = async (req, res) => {
+  try {
+    const emailToken = req.body.emailToken
+    if (!emailToken) return res.status(404).json('Email Token not Found')
+    const user = await User.findOne({ emailToken })
+    if (user) {
+      user.emailToken = null
+      user.isVerified = true
+
+      await user.save()
+
+      res.status(200).send('Email Verify Success')
+    } else {
+      res.status(404).send('Email Verification Not Found')
+    }
+  } catch (err) {
+    res.status(500).send({ message: err })
+  }
+}
+
 let refreshTokens = []
 
 exports.signin = async (req, res) => {
   try {
     res.header('Access-Control-Allow-Headers', 'x-access-token, Origin, Content-Type, Accept')
-    const Finder = req?.body?.username
-      ? {
-          username: req.body.username,
-        }
-      : {
-          email: req.body.email,
-        }
+    const Finder = {
+      email: req.body.email,
+    }
     const user = await User.findOne(Finder)
-    console.log(Finder)
-    console.log(user)
 
     if (!user) {
       return res.status(404).send({ message: 'User Not found.' })
@@ -54,11 +74,10 @@ exports.signin = async (req, res) => {
         message: 'Invalid Password!',
       })
     }
-    console.log(uuid())
     const accessToken = jwt.sign(
       {
         type: 'access',
-        sub: user.email,
+        sub: user._id,
       },
       process.env.ACCESS_TOKEN_SECRET,
       {
@@ -71,7 +90,7 @@ exports.signin = async (req, res) => {
     const refreshToken = jwt.sign(
       {
         type: 'refresh',
-        sub: user.email,
+        sub: user._id,
       },
       process.env.REFRESH_TOKEN_SECRET,
       {
@@ -90,6 +109,7 @@ exports.signin = async (req, res) => {
     res.status(200).send({
       accessToken: accessToken,
       refreshToken: refreshToken,
+      isVerified: user?.isVerified,
       // id: user?._id ?? '',
       // name: user?.name ?? '',
       // username: user?.username ?? '',

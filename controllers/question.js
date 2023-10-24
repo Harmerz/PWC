@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken')
 const question = require('../models/question')
+const User = require('../models/user')
 
 exports.handleQuestion = async (req, res) => {
   const token = req?.headers?.['authorization']?.split(' ')?.[1]
@@ -15,14 +16,17 @@ exports.handleQuestion = async (req, res) => {
   })
 
   try {
+    const user = await User.findOne({
+      _id: data.sub,
+    })
     const response = await question.findOne({
-      user: data.sub,
+      user: user.email,
     })
     console.log(response)
 
     if (!response) {
       const questionData = new question({
-        user: data.sub,
+        user: user.email,
         questions: [
           {
             number: req.body.number,
@@ -36,7 +40,7 @@ exports.handleQuestion = async (req, res) => {
     } else {
       await question.updateOne(
         {
-          user: data.sub,
+          user: user.email,
         },
         {
           $push: {
@@ -69,12 +73,42 @@ exports.getQuestions = async (req, res) => {
   })
 
   try {
+    const user = await User.findOne({
+      _id: data.sub,
+    })
     const response = await question.findOne({
-      user: data.sub,
+      user: user.email,
     })
     if (response) res.status(200).send(response)
     else res.status(404).send('No Data Found')
   } catch (err) {
     console.log(err)
   }
+}
+
+const multer = require('multer')
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, '/uploads')
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9)
+    cb(null, file.fieldname + '-' + uniqueSuffix)
+  },
+})
+
+const upload = multer({ storage: storage })
+exports.testUpload = (req, res) => {
+  upload(req, res, function (err) {
+    if (err instanceof multer.MulterError) {
+      console.log(err)
+    } else if (err) {
+      console.log(err)
+      // An unknown error occurred when uploading.
+    }
+    // Everything went fine.
+
+    res.sendStatus(200)
+  })
 }

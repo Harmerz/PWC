@@ -1,10 +1,13 @@
 const mongoose = require('mongoose')
 
 const userSchema = new mongoose.Schema({
-  name: { type: String, default: null },
   email: { type: String, unique: true },
+  name: { type: String, default: null },
   password: { type: String },
   token: { type: String },
+  isVerified: { type: Boolean, default: false },
+  emailToken: { type: String },
+  sendVerify: { type: String },
   basic: {
     phone: { type: String },
     birthPlace: { type: String },

@@ -44,6 +44,8 @@ app.get('/ping', (req, res) => {
   })
 })
 
+const axios = require('axios')
+
 const auth = require('./routes/auth')
 
 app.use('/auth', auth)
