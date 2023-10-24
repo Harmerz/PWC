@@ -44,12 +44,14 @@ exports.userInput = async (req, res) => {
       })
     }
   })
-  const dataUser = res.body
-  const user = await User.findOneAndUpdate(
+  const dataUser = req.body
+  console.log(dataUser)
+  await User.updateOne(
     {
       _id: data.sub,
     },
     dataUser
   )
-  res.status(200).send(user)
+
+  res.status(200).send('Success')
 }

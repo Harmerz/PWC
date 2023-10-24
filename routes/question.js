@@ -19,7 +19,9 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage })
 
 // const upload = multer({ dest: 'uploads/' })
-router.post('/question', [authJwt.verifyToken], controller.handleQuestion)
+router.post('/question-new', [authJwt.verifyToken], controller.newQuestion)
+router.post('/question', [authJwt.verifyToken], controller.enterQuestion)
+
 router.get('/question', [authJwt.verifyToken], controller.getQuestions)
 router.post('/uploads', [authJwt.verifyToken, upload.single('file')], controller.testUpload)
 module.exports = router

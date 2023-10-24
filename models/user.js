@@ -2,13 +2,13 @@ const mongoose = require('mongoose')
 
 const userSchema = new mongoose.Schema({
   email: { type: String, unique: true },
-  name: { type: String, default: null },
   password: { type: String },
   token: { type: String },
   isVerified: { type: Boolean, default: false },
   emailToken: { type: String },
   sendVerify: { type: String },
   basic: {
+    name: { type: String, default: null },
     phone: { type: String },
     birthPlace: { type: String },
     birthDate: { type: String },
@@ -22,13 +22,13 @@ const userSchema = new mongoose.Schema({
     SLUP: { type: String },
     KTP: { type: String },
   },
-  Buisness: {
+  buisness: {
     companyName: { type: String },
     buisnessType: { type: String },
     motherName: { type: String },
     Marital: { type: Boolean },
   },
-  Finnasial: {
+  finansial: {
     owned1: { type: String },
     properties1: { type: String },
     owned2: { type: String },
