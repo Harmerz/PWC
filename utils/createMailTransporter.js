@@ -1,12 +1,16 @@
 const nodemailer = require('nodemailer')
 
 const createMailTransporter = () => {
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    host: 'smtp.gmail.com',
+  var transporter = nodemailer.createTransport({
+    service: 'hotmail',
     auth: {
-      user: 'lensights.ai@gmail.com',
-      pass: 'Tetigraph123',
+      user: process.env.MAIL_USER,
+      pass: process.env.PASS_USER,
+    },
+    secureConnection: 'false',
+    tls: {
+      ciphers: 'SSLv3',
+      rejectUnauthorized: false,
     },
   })
   return transporter

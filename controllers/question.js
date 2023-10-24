@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken')
 const question = require('../models/question')
 const User = require('../models/user')
+const { default: axios } = require('axios')
 
 exports.handleQuestion = async (req, res) => {
   const token = req?.headers?.['authorization']?.split(' ')?.[1]
@@ -86,29 +87,50 @@ exports.getQuestions = async (req, res) => {
   }
 }
 
-const multer = require('multer')
+exports.testUpload = async (req, res) => {
+  const file = req.file
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, '/uploads')
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9)
-    cb(null, file.fieldname + '-' + uniqueSuffix)
-  },
-})
-
-const upload = multer({ storage: storage })
-exports.testUpload = (req, res) => {
-  upload(req, res, function (err) {
-    if (err instanceof multer.MulterError) {
-      console.log(err)
-    } else if (err) {
-      console.log(err)
-      // An unknown error occurred when uploading.
-    }
-    // Everything went fine.
-
-    res.sendStatus(200)
+  console.log(__dirname + file.filename)
+  const ocr = await axios.post('localhost:8000', {
+    mode: 'pytesseract',
+    img_url: __dirname + file.filename,
   })
+
+  const token = req?.headers?.['authorization']?.split(' ')?.[1]
+  let data
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+    data = decoded
+    if (err) {
+      console.log(err)
+      return res.status(401).send({
+        message: 'Unauthorized!',
+      })
+    }
+  })
+
+  try {
+    const user = await User.findOne({
+      _id: data.sub,
+    })
+
+    await question.updateOne(
+      {
+        user: user.email,
+        _id: file?.filename?.split('_')[1],
+      },
+      {
+        $push: {
+          questions: {
+            number: 4,
+            question: 'Do you have any Income Statement or any Financial Report? Upload it!',
+            answer: ocr?.data?.image_string,
+          },
+        },
+      }
+    )
+    res.status(200).send(file?.originalname)
+  } catch (err) {
+    console.log(err)
+    res.status(500).send(err)
+  }
 }
