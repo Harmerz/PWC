@@ -5,7 +5,15 @@ const port = process.env.PORT || 5000
 const cors = require('cors')
 const mongoose = require('mongoose')
 const Initial = require('./models/initial/role.initial.js')
+const helmet = require('helmet')
+const morgan = require('morgan')
+const xssClean = require('xss-clean')
+const hpp = require('hpp')
+const rateLimit = require('express-rate-limit')
 
+// Restrict all routes to only 100 requests per IP address every 1o minutes
+
+// Protect against XSS attacks, should come before any routes
 mongoose.set('strictQuery', false)
 mongoose
   .connect(process.env.DATABASE_URL)
@@ -17,7 +25,7 @@ mongoose
     console.error('UNABLE to connect to DB:', err)
   })
 
-var allowedOrigins = ['http://localhost:3000', 'https://pwc-be.vercel.app/']
+var allowedOrigins = ['http://localhost:3000', 'https://lensights.my.id/']
 app.use(
   cors({
     origin: function (origin, callback) {
@@ -34,8 +42,16 @@ app.use(
   })
 )
 
-//middleware
 app.use(express.json())
+const limiter = rateLimit({
+  windowMs: 30 * 60 * 1000, // 10 minutes
+  max: 1000, // 100 requests per IP
+})
+app.use(limiter)
+app.use(hpp())
+app.use(helmet())
+app.use(morgan('dev'))
+app.use(xssClean())
 app.get('/ping', (req, res) => {
   return res.status(200).send({
     status: 200,
@@ -43,8 +59,6 @@ app.get('/ping', (req, res) => {
     message: 'PONG',
   })
 })
-
-const axios = require('axios')
 
 const auth = require('./routes/auth')
 
