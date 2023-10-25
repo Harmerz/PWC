@@ -21,13 +21,54 @@ exports.signup = async (req, res) => {
     const roles = await Role.findOne({ name: 'user' })
     console.log(roles)
     user.roles = [roles._id]
-    await user.save()
+    const userFind = await User.findOne({ email: user.email })
+    if (userFind) {
+      await User.updateOne({ _id: user._id }, user)
+    } else {
+      await user.save()
+    }
     // Send success response
     sendVerificationMail(user)
 
     res.status(201).json({
       message: 'User created successfully',
     })
+  } catch (err) {
+    res.status(500).send({ message: err.message })
+    return
+  }
+}
+
+exports.resedVerify = async (req, res) => {
+  try {
+    res.header('Access-Control-Allow-Headers', 'x-access-token, Origin, Content-Type, Accept')
+    const user = await User.findOne({ email: req.body.email })
+    if (user) {
+      const dateBefore = new Date(user.sendVerify)
+      const resend = new Date()
+      var diff = resend - dateBefore
+      var diffMins = Math.round(((diff % 86400000) % 3600000) / 60000) // minutes
+      if (diffMins >= 1) {
+        sendVerificationMail(user)
+        await User.updateOne(
+          {
+            _id: user.id,
+          },
+          {
+            $set: {
+              sendVerify: new Date(),
+            },
+          }
+        )
+        res.status(200).send('email resend successfully')
+        return
+      }
+      res.status(500).send('Please wait 1 minutes to resend')
+      return
+    }
+
+    res.status(404).send('user not found')
+    return
   } catch (err) {
     res.status(500).send({ message: err.message })
     return
