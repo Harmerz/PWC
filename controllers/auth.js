@@ -23,7 +23,13 @@ exports.signup = async (req, res) => {
     user.roles = [roles._id]
     const userFind = await User.findOne({ email: user.email })
     if (userFind) {
-      await User.updateOne({ _id: user._id }, user)
+      await User.updateOne(
+        { _id: user._id },
+        {
+          password: bcrypt.hashSync(req.body.password, 8),
+          sendVerify: date,
+        }
+      )
     } else {
       await user.save()
     }
