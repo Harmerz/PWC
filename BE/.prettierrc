@@ -1,0 +1,17 @@
+{
+  "printWidth": 100,
+  "semi": false,
+  "singleQuote": true,
+  "tabWidth": 2,
+<<<<<<< HEAD
+  "trailingComma": "all",
+  "endOfLine": "auto",
+  "plugins": [
+    "prettier-plugin-tailwindcss"
+  ]
+}
+=======
+  "trailingComma": "es5",
+  "endOfLine": "auto"
+}
+>>>>>>> be/main
