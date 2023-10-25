@@ -10,7 +10,7 @@ const sendVerificationMail = (user) => {
     html: `<div style="display: flex;
                 justify-content: center;
                 flex-direction: column, width: 100%;">
-                <h2>Hello ${user.name},</h2>
+                <h2>Hello ${user.email},</h2>
                 <p>Please click on the following link to verify your account.</p>
                     <a href='https://lensights.my.id/verify-email?emailToken=${user.emailToken}'>
                       Verify Email Address
