@@ -25,7 +25,7 @@ mongoose
     console.error('UNABLE to connect to DB:', err)
   })
 
-var allowedOrigins = ['http://localhost:3000', 'https://lensights.my.id/']
+var allowedOrigins = ['http://localhost:3000', 'https://lensights.my.id']
 app.use(
   cors({
     origin: function (origin, callback) {
